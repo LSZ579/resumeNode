@@ -19,6 +19,7 @@ module.exports = (sequelize, DataTypes) => {
             'add_time': DataTypes.STRING,
             'collect_number': DataTypes.INTEGER,
             'delete': DataTypes.INTEGER,
+            'watch': DataTypes.INTEGER,
             'delete_time': DataTypes.INTEGER
         },
     )

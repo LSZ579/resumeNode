@@ -12,7 +12,9 @@ module.exports = (sequelize, DataTypes) => {
             'password': DataTypes.STRING,
             'account': DataTypes.STRING,
             'delete': DataTypes.DOUBLE,
-            'delete_time': DataTypes.DOUBLE
+            'delete_time': DataTypes.DOUBLE,
+            'slot': DataTypes.STRING,
+            'add_time': DataTypes.STRING
         },
     )
 }

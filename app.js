@@ -19,7 +19,6 @@ const koaBody = require('koa-body');
 
 const log4js = require('./util/log4j')
 onerror(app)
-
 app.keys = ['this is my secret set'];
 
 app.use(session({
