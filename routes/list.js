@@ -1,6 +1,7 @@
 
     const router = require('koa-router')(),
     Sql = require('../service/operations_sql');
+    const com = require('../controllers/login');
     const { Query } = require('mongoose');
     router.prefix('/pc')
     //获取简历列表
@@ -15,9 +16,17 @@
 
     // 获取简历详情
     router.post('/resume/detail',async (ctx)=>{
-        let query = ctx.request.body;
+        console.log(ctx.request)
+        let query = ctx.request.body,collect = '';
         let result = await Sql.getResumeDetail(query.id)
-        ctx.body = result;
+        let status =await verifyToken(query.token);
+        if(status){
+            collect = await Sql.checkCollect(query.user_id,query.id)
+        }
+        ctx.body = {
+            result,
+            collect
+        };
     })
 
     // 查询关键字
@@ -70,13 +79,55 @@
 
     // 下载简历,获取url
     router.post('/resume/preview',async (ctx)=>{
-        let ip = getClientIP(ctx.request);
-        console.log(ip)
-        let {id} = ctx.request.body;
-        let res = await Sql.previewResume(id);
+        let query = ctx.request.body;
+        let status =await verifyToken(query.token);
+        if(!status){
+            ctx.body = throwError()
+            return
+        }
+        let result = await Sql.watchAdd(query.id,'down_number');
+        let res = await Sql.previewResume(query.id);
         ctx.body = res;
     })
 
+
+    // 用户收藏简历
+    router.post('/resume/collect',async (ctx)=>{
+        let query = ctx.request.body,user_id = query.user_id,resume_id = query.resume_id;
+        let status =await verifyToken(query.token);
+        if(!status){
+            ctx.body = throwError()//登录超时
+            return
+        }
+        let collect = await Sql.checkCollect(user_id,resume_id)
+        if(collect){
+            // 存在收藏记录  则更新记录就好了
+            let collectStatus = collect.dataValues.status==1?0:1;
+            var addNumber = await Sql.watchAdd(resume_id,'collect_number');
+            let updateStatus = await Sql.updateCollectStatus(user_id,resume_id,collectStatus);
+            ctx.body = updateStatus;
+            return
+        }
+        let addCollect = await Sql.userAddCollect(user_id,resume_id);
+        let result = await Sql.watchAdd(resume_id,'collect_number');
+        ctx.body = addCollect;
+    })
+
+    router.post('/resume/checkCollect',async (ctx)=>{
+        let query = ctx.request.body;
+        let res = await Sql.checkCollect(query.user_id,query.resume_id);
+        ctx.body = res;
+    })
+
+    function verifyToken(token) {
+        return  com.verifyToken(token)
+    }
+    function throwError(){
+        return {
+            code: 10001,
+            err:'您还未登录或登录已超时，请重新登录'
+        }
+    }
     function getClientIP(req) {
         return req.headers['x-forwarded-for'] || // 判断是否有反向代理 IP
             req.headers['x-real-ip']

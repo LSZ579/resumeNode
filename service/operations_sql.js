@@ -1,5 +1,5 @@
 
-const { rem_user,rem_list,rem_order,rem_keyword  } = require('../models/index');
+const { rem_user,rem_list,rem_order,rem_keyword,rem_collect  } = require('../models/index');
 
 const { Op } = require('sequelize');
     var date = new Date((new Date()).getTime());
@@ -135,6 +135,10 @@ static async watchAdd(id,files='watch'){
     if(num) return 1;
 }
 
+static async decrementFiles(id,files='collect_number'){
+    
+}
+
 // 查询账号是否存在
 static async checkCount(account) {
     return await rem_user.findOne({
@@ -158,11 +162,60 @@ static async userRegister(query,pass){
 // 获取用户信息
 static async getUserInfo(id){
     return await rem_user.findOne({
+        attributes: { exclude: ['slot','password',] },//隐藏该字段
         where:{
             id
         }
     })
 }
+
+// 用户收藏简历
+static async checkCollect(user_id,resume_id){
+    return await rem_collect.findOne({
+        where:{
+            resume_id,
+            user_id
+        }
+    })
+}
+
+// 更新简历收藏状态
+static async updateCollectStatus(user_id,resume_id,status) {
+    return await rem_collect.update(
+        {
+            status: status
+        },
+      {
+        where:{
+            user_id,
+            resume_id
+        }
+      }
+    )
+}
+
+// 用户收藏简历
+static async userAddCollect(user_id,resume_id){
+    let user = await rem_user.findOne({where:{id: user_id}})
+    if(!user) return {code:-1,err:'用户不存在'}
+    return await rem_collect.create({
+        resume_id,
+        user_id,
+        add_time:nowTime
+    })
+}
+
+// 检查是否收藏
+static async checkCollect(user_id,resume_id){
+    return await rem_collect.findOne({
+       where:{
+        resume_id,
+        user_id
+       }
+    })
+}
+
+
 
 }
 

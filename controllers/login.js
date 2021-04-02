@@ -43,17 +43,17 @@ module.exports = {
     },
 
     verifyToken:async(token)=>{
-      return  new Promise((reslove,reject)=>{
-                jwt.verify(token, "gamercode",
+        let status;
+          await  jwt.verify(token, "gamercode",
               (err, decode)=> {
                  if (err) {  //  时间失效的时候/ 伪造的token          
-                    reslove({status:false})          
+                    status = false        
                  } else {
-                    reslove({status:true})          
+                    status = true;         
                  }
              }
              );
-        })
+        return status
     }
 
 }

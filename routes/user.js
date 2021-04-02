@@ -1,11 +1,11 @@
-const router = require('koa-router')(), 
-    Sql = require('../service/operations_sql'),  
-     md5 = require('../middlewares/md5');
-    const com = require('../controllers/login');
-     const uuid = require('../middlewares/uuid');
-     const jwt = require('jsonwebtoken');
+const router = require('koa-router')(),
+    Sql = require('../service/operations_sql'),
+    md5 = require('../middlewares/md5');
+const com = require('../controllers/login');
+const uuid = require('../middlewares/uuid');
+const jwt = require('jsonwebtoken');
 router.prefix('/pc')
- 
+
 router.post('/setPassword', async (ctx, next) => {
     ctx.body = 6666
 })
@@ -22,46 +22,47 @@ router.post('/user/register', async (ctx, next) => {
         return;
     }
     let pass = await md5.MD5(parms.password),
-    data = await Sql.userRegister(parms,pass);
-    ctx.body = data 
+        data = await Sql.userRegister(parms, pass);
+    ctx.body = data
 })
 
+// 获取用户信息
 router.get('/user/getUserInfo', async (ctx, next) => {
     let parms = ctx.query,
         data = await Sql.getUserInfo(parms.id);
-         ctx.body = data
+    ctx.body = data
 })
 
 // 校验token是否有效
-router.post('/user/verifyToken',async (ctx)=>{
+router.post('/user/verifyToken', async (ctx) => {
     let token = ctx.request.body.token;
-        com.verifyToken(token).then(res=>{
+    com.verifyToken(token).then(res => {
         ctx.body = res;
-        })
-//     let token = ctx.request.body.token;
-//     let sta = jwt.verify(token, "gamercode",
-//    await function (err, decode) {
-//         if (err) {  //  时间失效的时候/ 伪造的token          
-//             // ctx.body = {'status':0};            
-//         } else {
-//             // ctx.body = {'status':1};
-//         }
-//     }
-//     );
+    })
+    //     let token = ctx.request.body.token;
+    //     let sta = jwt.verify(token, "gamercode",
+    //    await function (err, decode) {
+    //         if (err) {  //  时间失效的时候/ 伪造的token          
+    //             // ctx.body = {'status':0};            
+    //         } else {
+    //             // ctx.body = {'status':1};
+    //         }
+    //     }
+    //     );
 
 })
 
 
 // 登录
-router.post('/user/login',async (ctx)=>{
-    const {account, password} = ctx.request.body;
+router.post('/user/login', async (ctx) => {
+    const { account, password } = ctx.request.body;
     const user = await Sql.checkCount(account)
-        // 判断用户是否存在
+    // 判断用户是否存在
     if (!user) {
         // 表示不存在该用户
         ctx.body = {
             code: -1,
-            message: '该用户不存在'
+            err: '账号不存在'
         };
         return;
     }
@@ -69,24 +70,32 @@ router.post('/user/login',async (ctx)=>{
         user_id: user.id,
         user_name: user.account
     };
-   
-     let pass = await md5.MD5(password);
-     console.log(pass)
-        const token = jwt.sign(payload, "gamercode", {
-            expiresIn: 3600
-        });
-        if(user !== null && pass == user.dataValues.password){
-            ctx.body = {
-                user,
-                code: 0,
-                token
-            }
-        }else{
-            ctx.body = {
-                code: 1,
-                message: '登陆失败'
-            }
+    let pass = await md5.MD5(password);
+    const token = jwt.sign(payload, "gamercode", {
+        expiresIn: 7200
+    });
+    if(pass != user.dataValues.password){
+        ctx.body = {
+            code: -1,
+            err: '密码错误'
+        };
+        return;
+    }
+    if (user !== null && pass == user.dataValues.password) {
+        let userInfo = Object.assign({}, user.dataValues)
+        delete userInfo['slot'];
+        delete userInfo['password'];
+        ctx.body = {
+            userInfo,
+            code: 0,
+            token
         }
+    } else {
+        ctx.body = {
+            code: -1,
+            err: '登陆失败'
+        }
+    }
 })
 
 
