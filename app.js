@@ -59,6 +59,7 @@ app.use(views(__dirname + '/views', {
 app.use(async(ctx, next) => {
     const start = new Date()
     await next()
+    console.log('5555')
     const ms = new Date() - start
         // console.log(`${ctx.method} ${ctx.url} - ${ms}ms`)
     log4js.resLogger(ctx, ms);
@@ -91,19 +92,24 @@ app.use(static(
 
 
 const resume = require('./routes/list.js'),
-upload = require('./routes/upload.js')
+upload = require('./routes/upload.js'),
+postList = require('./routes/postList.js')
 ;
 const user = require('./routes/user.js');
 
 app.use(user.routes(), user.allowedMethods());
+app.use(postList.routes(), postList.allowedMethods());
 app.use(resume.routes(), resume.allowedMethods());
 app.use(upload.routes(),upload.allowedMethods())
 
 
+
 // error-handling
 app.on('error', (err, ctx) => {
+    console.log(ctx)
     log4js.errLogger(ctx, err)
     console.error('server error', err, ctx)
 });
+
 
 module.exports = app

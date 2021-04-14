@@ -7,9 +7,6 @@
     //获取简历列表
     router.post('/resume/list',async (ctx)=>{
         let query = ctx.request.body;
-        if(query.order){
-            query.order = JSON.parse(query.order);
-        }
         let result = await Sql.getRemListPage(query.size,query.page,query.value,query.currentFile,query.currentResume,query.order)
         ctx.body = result;
     })
@@ -94,7 +91,12 @@
     // 用户收藏简历
     router.post('/resume/collect',async (ctx)=>{
         let query = ctx.request.body,user_id = query.user_id,resume_id = query.resume_id;
+        if(!query.token){ 
+            ctx.body = throwError()//登录超时
+            return
+        }
         let status =await verifyToken(query.token);
+        console.log(status,78888)
         if(!status){
             ctx.body = throwError()//登录超时
             return
@@ -103,7 +105,11 @@
         if(collect){
             // 存在收藏记录  则更新记录就好了
             let collectStatus = collect.dataValues.status==1?0:1;
-            var addNumber = await Sql.watchAdd(resume_id,'collect_number');
+            if(collectStatus==1){
+                var addNumber = await Sql.watchAdd(resume_id,'collect_number');
+            }else{
+                await Sql.decrementFiles(resume_id,'collect_number')
+            }
             let updateStatus = await Sql.updateCollectStatus(user_id,resume_id,collectStatus);
             ctx.body = updateStatus;
             return

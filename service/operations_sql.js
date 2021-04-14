@@ -1,5 +1,5 @@
 
-const { rem_user,rem_list,rem_order,rem_keyword,rem_collect  } = require('../models/index');
+const { rem_user,rem_list,rem_order,rem_keyword,rem_collect,rem_postlist  } = require('../models/index');
 
 const { Op } = require('sequelize');
     var date = new Date((new Date()).getTime());
@@ -15,6 +15,7 @@ const { Op } = require('sequelize');
 class Sql {
     // 查询简历列表
     static async getRemListPage(count=10,page=1,value='',file_type='',type='',orders) {
+        let rank = [['watch', 'DESC'],['down_number', 'DESC'],['id', 'DESC'],['id', 'DESC']];
         console.log(type,file_type)
         return await rem_list.findAndCountAll({
             attributes: { exclude: ['file_url'] },//隐藏该字段
@@ -37,7 +38,7 @@ class Sql {
                 }
             },
             'order': [
-                orders||['id', 'DESC']
+                rank[orders]||['watch', 'DESC']
             ],
             limit: count,
             raw: true,
@@ -136,7 +137,11 @@ static async watchAdd(id,files='watch'){
 }
 
 static async decrementFiles(id,files='collect_number'){
-    
+    let res = await rem_list.findOne({
+        where:{id}
+    })
+    let num = res.decrement(files);
+    if(num) return 1;
 }
 
 // 查询账号是否存在
@@ -215,7 +220,70 @@ static async checkCollect(user_id,resume_id){
     })
 }
 
+// ----------------------------------------------------------
+// 添加文章
+static async addPost(title,content,desc,type=1){
+    return await rem_postlist.create({
+        title,
+        content,
+        desc,
+        type,
+        add_time:nowTime
+    })
+}
 
+// 更新文章
+static async updatePost(id,title,content,desc){
+    return await rem_postlist.update(
+        {
+            content,
+            title,
+            desc
+        },
+      {
+        where:{
+            id
+        }
+      })
+}
+
+// 获取文章列表
+static async getPostList(count=10,page=1,value='',order =1) {
+    let orders = [['watch','desc'],['id','desc']]
+    return await rem_postlist.findAndCountAll({
+        where: {
+            [Op.or]: {
+                title: {
+                    [Op.like]: '%' + value + '%'
+                }
+            }
+        },
+        limit: count,
+        order:[orders[order]],
+        raw: true,
+        offset: count * (page - 1),
+    }).then(res => {
+        return res;
+    })
+}
+
+// 获取文章详情
+static async getPostDetail(id){
+    return await rem_postlist.findOne({
+        where:{
+            id
+        }
+    })
+}
+
+// 阅读文章
+static async add_post_watch(id) {
+    let res = await rem_postlist.findOne({
+        where:{id}
+    })
+    let num = res.increment('watch');
+    return num;
+}
 
 }
 
