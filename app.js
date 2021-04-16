@@ -93,10 +93,13 @@ app.use(static(
 
 const resume = require('./routes/list.js'),
 upload = require('./routes/upload.js'),
-postList = require('./routes/postList.js')
+postList = require('./routes/postList.js'),
+make = require('./routes/make.js')
+
 ;
 const user = require('./routes/user.js');
 
+app.use(make.routes(), make.allowedMethods());
 app.use(user.routes(), user.allowedMethods());
 app.use(postList.routes(), postList.allowedMethods());
 app.use(resume.routes(), resume.allowedMethods());

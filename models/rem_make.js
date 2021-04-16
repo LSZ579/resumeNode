@@ -1,18 +1,18 @@
 module.exports = (sequelize, DataTypes) => {
     return sequelize.define(
-        'rem_postlist',
+        'rem_make',
         {
             'id': {
                 type: DataTypes.INTEGER,
                 primaryKey: true,       //主键
                 autoIncrement: true,
             },
+            'html': DataTypes.STRING,
             'title': DataTypes.STRING,
-            'content': DataTypes.STRING,
-            'type': DataTypes.STRING,
-            'desc': DataTypes.STRING,
-            'watch': DataTypes.INTEGER,
-            'add_time': DataTypes.INTEGER
+            'keyword': DataTypes.STRING,
+            'add_time': DataTypes.STRING,
+            'watch':DataTypes.INTEGER,
+            'css_url':DataTypes.INTEGER,
         },
     )
 }

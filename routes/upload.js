@@ -29,7 +29,12 @@ router.post('/upload/file',async (ctx)=>{
         //图片上传
         filePath = './public/coverImg/'+file.name;
         path = '/coverImg/'+file.name;
-    }else{
+    }
+    else if(params.type==3){
+        filePath = './public/css/'+file.name;
+        path = '/css/'+file.name;
+    }
+    else{
         //简历
         filePath = './public/files/'+file.name;
         path = '/files/'+file.name;

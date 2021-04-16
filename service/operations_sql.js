@@ -1,5 +1,5 @@
 
-const { rem_user,rem_list,rem_order,rem_keyword,rem_collect,rem_postlist  } = require('../models/index');
+const { rem_user,rem_list,rem_order,rem_keyword,rem_collect,rem_postlist ,rem_make } = require('../models/index');
 
 const { Op } = require('sequelize');
     var date = new Date((new Date()).getTime());
@@ -284,6 +284,59 @@ static async add_post_watch(id) {
     let num = res.increment('watch');
     return num;
 }
+
+
+// 添加html简历模板
+static async addResumeModule(html,keyword,title,css_url) {
+    let res = await rem_make.create({
+        title,
+        keyword,
+        css_url,
+        html,
+        add_time: nowTime
+    })
+    return res;
+}
+
+// 更新简历
+static async updateResumeModule(id,html,keyword,title,css_url){
+    return await rem_make.update(
+        {
+            html,keyword,title,css_url
+        },
+      {
+        where:{
+            id
+        }
+      })
+}
+// getResumeModuleList
+static async getResumeModuleList(count=10,page=1,value='',order =1) {
+    let orders = [['watch','desc'],['id','desc']]
+    return await rem_make.findAndCountAll({
+        where: {
+            [Op.or]: {
+                title: {
+                    [Op.like]: '%' + value + '%'
+                }
+            }
+        },
+        limit: count,
+        order:[orders[order]],
+        raw: true,
+        offset: count * (page - 1),
+    }).then(res => {
+        return res;
+    })
+}
+static async get_html_resume(id) {
+    let res = await rem_make.findOne({
+        where:{id}
+    })
+    
+    return res;
+}
+
 
 }
 
