@@ -31,8 +31,9 @@ router.post('/upload/file',async (ctx)=>{
         path = '/coverImg/'+file.name;
     }
     else if(params.type==3){
-        filePath = './public/css/'+file.name;
-        path = '/css/'+file.name;
+        let time = new Date().getTime();
+        filePath = './public/css/'+time+file.name;
+        path = '/css/'+time+file.name;
     }
     else{
         //简历
